@@ -1,0 +1,26 @@
+class:: BitstreamAutocorrelation
+summary:: A time-domain monophonic pitch tracker
+related:: TODO
+categories:: UGens>TODO
+
+description::
+
+A time-domain monophonic pitch tracker
+
+
+classmethods::
+
+method::ar, kr
+
+argument::TODO
+
+argument::TODO
+
+
+examples::
+
+code::
+
+{ BitstreamAutocorrelation.ar(/* TODO */) }.play
+
+::
