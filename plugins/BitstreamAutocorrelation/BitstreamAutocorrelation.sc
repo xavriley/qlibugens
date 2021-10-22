@@ -1,7 +1,7 @@
 BitstreamAutocorrelation : UGen {
-	*ar { |input, gain|
+	*ar { |input|
 		/* TODO */
-		^this.multiNew('audio', input, gain);
+		^this.multiNew('audio', input);
 	}
 	checkInputs {
 		/* TODO */
