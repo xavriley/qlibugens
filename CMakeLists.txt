@@ -7,7 +7,7 @@
 ####################################################################################################
 # basic project config
 cmake_minimum_required(VERSION 3.5)
-set(project_name "Qlib UGens")
+set(project_name "QlibUGens")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules ${CMAKE_MODULE_PATH})
 set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_INSTALL_PREFIX "/Users/xavriley/Library/Application Support/SuperCollider/Extensions" CACHE PATH "install here" FORCE)
@@ -76,6 +76,7 @@ set(BitstreamAutocorrelation_schelp_files
     plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.schelp
 )
 
+
 sc_add_server_plugin(
     "QlibUGens/BitstreamAutocorrelation" # desination directory
     "BitstreamAutocorrelation" # target name
@@ -87,19 +88,23 @@ sc_add_server_plugin(
 include(ExternalProject) # Needs to be included first
 set(EXTERNALS_DIR ${CMAKE_BINARY_DIR}/external)
 ExternalProject_Add(q
-	PREFIX ${EXTERNALS_DIR}
-	GIT_REPOSITORY https://github.com/cycfi/q.git
-	GIT_TAG        origin/master
-	STEP_TARGETS   build
-	# BUILD_ALWAYS OFF
-	CMAKE_CACHE_ARGS
+		PREFIX ${EXTERNALS_DIR}
+		GIT_REPOSITORY https://github.com/cycfi/q.git
+		GIT_TAG        origin/master
+		STEP_TARGETS   build
+		# BUILD_ALWAYS OFF
+		CMAKE_CACHE_ARGS
 		-DQ_BUILD_IO:BOOL=ON
 		-DQ_BUILD_TEST:BOOL=OFF
 		-DQ_BUILD_EXAMPLES:BOOL=OFF
-)
+		)
 include_directories(${EXTERNALS_DIR}/src/q/q_lib/include)
 include_directories(${EXTERNALS_DIR}/src/q/infra/include)
-# add_dependencies(BitstreamAutocorrelation q)
+
+add_library(libq INTERFACE)
+add_dependencies(libq ${project_name})
+target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/qlib/include)
+target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/infra/include)
 
 # End target BitstreamAutocorrelation
 ####################################################################################################
