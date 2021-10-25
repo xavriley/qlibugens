@@ -40,6 +40,14 @@ jobs:
       working-directory: ${{github.workspace}}\build
       run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}\supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}\build\install
 
+    - name: Prebuild (Unix)
+      working-directory: ${{github.workspace}}/app
+      env:
+        CC: ${{ matrix.cc }}
+      run: |
+        sudo apt install -y pulseaudio dbus-x11 libssl-dev supercollider-server sc3-plugins-server alsa-base alsa-utils jackd2 libjack-jackd2-dev libjack-jackd2-0 libasound2-dev librtmidi-dev pulseaudio-module-jack
+      if: matrix.os == 'ubuntu-18.04'
+      
     - name: Build (Unix)
       if: matrix.os != 'windows-latest'
       working-directory: ${{github.workspace}}/build
