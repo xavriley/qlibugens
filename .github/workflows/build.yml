@@ -9,12 +9,32 @@ jobs:
 
     runs-on: ${{matrix.os}}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-18.04, windows-latest]
+        include:
+          - { title: "Linux", os: "ubuntu-18.04", cc: "clang", arch: "x64", build_type: "Release" }
+          - { title: "Windows", os: "windows-latest", cc: "vs2019", arch: "x64", build_type: "Release" }
+          - { title: "Mac", os: "macos-latest", cc: "clang", arch: "x64", build_type: "Release" }
+    env:
+      SC_SRC_PATH: ${{ github.workspace }}/supercollider
+      BUILD_PATH: ${{ github.workspace }}/build
+      INSTALL_PATH: ${{ github.workspace }}/build/install
 
     steps:
     - uses: actions/checkout@v2
-    
+
+    - name: set filename # use tag or sha for version
+      id: set-filename
+      shell: bash
+      run: |
+        if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+        FULL_TAG=${GITHUB_REF#refs/tags/}
+        VERSION=${FULL_TAG##Version-}
+        else
+        VERSION=$GITHUB_SHA
+        fi
+        echo "::set-output name=filename::QlibUGens-$VERSION-${{ matrix.os }}"
+
     - name: Install 7Zip (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -40,32 +60,46 @@ jobs:
       working-directory: ${{github.workspace}}\build
       run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}\supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}\build\install
 
+    - name: Prebuild (Unix)
+      working-directory: ${{github.workspace}}/build
+      env:
+        CC: ${{ matrix.cc }}
+      run: |
+        sudo apt install -y pulseaudio dbus-x11 libssl-dev supercollider-server sc3-plugins-server alsa-base alsa-utils jackd2 libjack-jackd2-dev libjack-jackd2-0 libasound2-dev librtmidi-dev pulseaudio-module-jack
+      if: matrix.os == 'ubuntu-18.04'
+
     - name: Build (Unix)
       if: matrix.os != 'windows-latest'
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: cmake --build . --config "Release" --target install -- -j 1
+      run: sudo cmake --build . --config "Release" --target install
 
     - name: Build (Windows)
       working-directory: ${{github.workspace}}\build
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: cmake --build . --config "Release" --target install -- -j 1
+      run: cmake --build . --config "Release" --target install
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
       if: matrix.os != 'windows-latest'
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: zip -r BitstreamAutocorrelation-${{runner.os}} install/BitstreamAutocorrelation
+      run: zip -r ${{ steps.set-filename.outputs.filename }}.zip install/QlibUGens
       
       # Gather all files in a zip
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
       working-directory: ${{github.workspace}}\build
-      run: Compress-7Zip "install\BitstreamAutocorrelation" -ArchiveFileName "BitstreamAutocorrelation-${{runner.os}}.zip" -Format Zip
-      
+      run: Compress-7Zip "install\QlibUGens" -ArchiveFileName "${{ steps.set-filename.outputs.filename }}.zip" -Format Zip
+
+    - name: upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.set-filename.outputs.filename }}
+        path: ${{ env.BUILD_PATH }}/${{ steps.set-filename.outputs.filename }}.zip
+
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
       id: checkTag
@@ -91,6 +125,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{github.workspace}}/build/BitstreamAutocorrelation-${{runner.os}}.zip
-        asset_name: BitstreamAutocorrelation-${{runner.os}}.zip
+        file: ${{ env.BUILD_PATH }}/${{ steps.set-filename.outputs.filename }}.zip
+        asset_name: ${{ steps.set-filename.outputs.filename }}.zip
         tag: ${{ github.ref }}
