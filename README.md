@@ -1,8 +1,8 @@
-# Qlib UGens
+# BitstreamAutocorrelation UGen
 
-Author: Xavier Riley
+Author: Xavier Riley, q library by Cycfi Research
 
-A time-domain monophonic pitch tracker
+A time-domain monophonic pitch tracker for SuperCollider.
 
 ### Requirements
 

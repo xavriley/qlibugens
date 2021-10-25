@@ -1,5 +1,5 @@
 // PluginBitstreamAutocorrelation.hpp
-// Xavier Riley (xavriley@hotmail.com)
+// Xavier Riley (@xavriley)
 #pragma once
 
 #include <q/support/literals.hpp>
@@ -16,19 +16,17 @@ namespace QlibUGens {
 class BitstreamAutocorrelation : public SCUnit {
 public:
     BitstreamAutocorrelation();
+    ~BitstreamAutocorrelation();
 
-    cycfi::q::pd_preprocessor::config cfg;
-    std::shared_ptr<cycfi::q::pitch_detector> m_pd;
-    std::shared_ptr<cycfi::q::pd_preprocessor> m_pp;
+    cycfi::q::pitch_detector* m_pd;
+    cycfi::q::pd_preprocessor* m_pp;
     float m_frequency = 0.0f;
-    // Destructor
-    // ~BitstreamAutocorrelation();
+    float m_lowest_detectable_frequency = 80.0f;
+    float m_highest_detectable_frequency = 1280.0f;
 
 private:
     // Calc function
     void next(int nSamples);
-
-    // Member variables
 };
 
 } // namespace QlibUGens

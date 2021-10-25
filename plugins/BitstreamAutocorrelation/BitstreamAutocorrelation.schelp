@@ -1,26 +1,51 @@
 class:: BitstreamAutocorrelation
 summary:: A time-domain monophonic pitch tracker
-related:: TODO
-categories:: UGens>TODO
+related:: Tartini, Pitch, Qitch
+categories:: UGens>Analysis>Pitch
 
 description::
 
-A time-domain monophonic pitch tracker
+A fast and accurate realtime pitch tracker for monophonic sources.
 
+Based on the q audio library from Cycfi research, "Bitstream Autocorrelation" was developed with the aim of tracking
+pitch from guitars with high accuracy and low latency. It should also track the fundamental frequency of any other
+monophonic instruments equally well.
+
+Pitch estimates are made for an incoming stream of audio samples, meaning that an estimate is output as soon as possible
+after the pitch has been detected. For this reason the plugin runs at audio rate as it can output predictions at any
+point. Outputting once at the start of each control block would miss this information. The lower bound for this prediction
+latency is 2 * period_of_lowest_detectable_frequency.
+
+For the low E string of a guitar (circa 80Hz), this equates to around 1100 samples (circa 25ms at 44.1kHz). This means
+that, in this case, the note would sound for 25ms before a prediction is output from the UGen. This lower bound is common
+to similar autocorrelation-based pitch detection schemes.
 
 classmethods::
 
-method::ar, kr
+method::ar
 
-argument::TODO
+argument::input
 
-argument::TODO
+Input as audio rate signal.
 
+argument::low_f
+
+Lowest detectable frequency. Lower frequencies here can introduce longer latencies in detection, so aim to minimize
+this by constraining it to the range of your expected source where possible.
+
+argument::high_f
+
+Highest detectable frequency. Higher frequencies do not affect latency although they incur a small amount of additional
+computation time. On resource constrained systems this should be reduced where possible.
 
 examples::
 
 code::
 
-{ BitstreamAutocorrelation.ar(/* TODO */) }.play
+({
+  SinOsc.ar(
+    BitstreamAutocorrelation.ar(Saw.ar(440), 400, 500).poll
+  );
+}.play)
 
 ::
