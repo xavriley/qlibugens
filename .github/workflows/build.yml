@@ -65,14 +65,14 @@ jobs:
       if: matrix.os != 'windows-latest'
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: zip -r BitstreamAutocorrelation-${{runner.os}} install/BitstreamAutocorrelation
+      run: zip -r BitstreamAutocorrelation-${{runner.os}} install/QlibUgens
       
       # Gather all files in a zip
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
       working-directory: ${{github.workspace}}\build
-      run: Compress-7Zip "install\BitstreamAutocorrelation" -ArchiveFileName "BitstreamAutocorrelation-${{runner.os}}.zip" -Format Zip
+      run: Compress-7Zip "install\QlibUgens" -ArchiveFileName "BitstreamAutocorrelation-${{runner.os}}.zip" -Format Zip
       
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
