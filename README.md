@@ -4,6 +4,19 @@ Author: Xavier Riley, q library by Cycfi Research
 
 A time-domain monophonic pitch tracker for SuperCollider.
 
+### How to install
+
+Check the Releases list on GitHub. Download and unzip the file that corresponds to your operating system. 
+Place the `QlibUGens` folder in your SuperCollider Extensions directory. If you have SuperCollider already running,
+recompile the class library (Language > Recompile Class Library) and reboot the server to pickup the changes.
+
+### TODOs
+
+-[ ] make preprocessing of signal optional
+-[ ] make hysterisis argument into a param (sets the noise floor below which BACF ignores the signal)
+-[ ] add a parameter for confidence threshold (not sure about this one)
+-[ ] fix the Github Actions build for Windows
+
 ### Requirements
 
 - CMake >= 3.5
