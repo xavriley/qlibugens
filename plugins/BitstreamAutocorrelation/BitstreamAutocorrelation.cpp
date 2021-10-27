@@ -30,22 +30,30 @@ BitstreamAutocorrelation::BitstreamAutocorrelation()
         m_lowest_detectable_frequency = in0(1);
         m_highest_detectable_frequency = in0(2);
 
-        this->m_pp = new(RTAlloc(this->mWorld, sizeof(cycfi::q::pd_preprocessor)))
+        void *pp_mem = RTAlloc(this->mWorld, sizeof(cycfi::q::pd_preprocessor));
+        void *pd_mem = RTAlloc(this->mWorld, sizeof(cycfi::q::pitch_detector));
+
+
+        // do nullptr check first https://scsynth.org/t/writing-a-plugin-which-takes-audio-and-outputs-control-rate/4733/11?u=xavriley
+        if (!pp_mem || !pd_mem) {
+            Print("BitstreamAutocorrelation: RT memory allocation failed, try increasing the real-time memory size in the server options\n");
+            pp_mem = nullptr;
+            pd_mem = nullptr;
+            goto end;
+        }
+
+        this->m_pp = new (pp_mem)
                 cycfi::q::pd_preprocessor(cycfi::q::pd_preprocessor::config{},
                                           cycfi::q::frequency(m_lowest_detectable_frequency),
                                           cycfi::q::frequency(m_highest_detectable_frequency),
                                           sampleRate());
 
-        this->m_pd = new(RTAlloc(this->mWorld, sizeof(cycfi::q::pitch_detector)))
+        this->m_pd = new (pd_mem)
                 cycfi::q::pitch_detector(cycfi::q::frequency(m_lowest_detectable_frequency),
                                          cycfi::q::frequency(m_highest_detectable_frequency),
                                          sampleRate(),
                                          -45_dB);
 
-        if (!this->m_pp || !this->m_pd) {
-            Print("BitstreamAutocorrelation: RT memory allocation failed, try increasing the real-time memory size in the server options\n");
-            goto end;
-        }
         mCalcFunc = make_calc_function<BitstreamAutocorrelation, &BitstreamAutocorrelation::next>();
 
         m_frequency = 0.0f;
