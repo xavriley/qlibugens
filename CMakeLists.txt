@@ -85,26 +85,47 @@ sc_add_server_plugin(
     "${BitstreamAutocorrelation_schelp_files}"
 )
 
-include(ExternalProject) # Needs to be included first
-set(EXTERNALS_DIR ${CMAKE_BINARY_DIR}/external)
-ExternalProject_Add(q
-		PREFIX ${EXTERNALS_DIR}
-		GIT_REPOSITORY https://github.com/cycfi/q.git
-		GIT_TAG        origin/master
-		STEP_TARGETS   build
-		# BUILD_ALWAYS OFF
-		CMAKE_CACHE_ARGS
-		-DQ_BUILD_IO:BOOL=ON
-		-DQ_BUILD_TEST:BOOL=OFF
-		-DQ_BUILD_EXAMPLES:BOOL=OFF
-		)
-include_directories(${EXTERNALS_DIR}/src/q/q_lib/include)
-include_directories(${EXTERNALS_DIR}/src/q/infra/include)
+# This external project method works but ran into race issues on Github CI
+# include(ExternalProject) # Needs to be included first
+# set(EXTERNALS_DIR ${CMAKE_BINARY_DIR}/external)
+# ExternalProject_Add(q
+# 		PREFIX ${EXTERNALS_DIR}
+# 		GIT_REPOSITORY https://github.com/cycfi/q.git
+# 		GIT_TAG        origin/master
+# 		STEP_TARGETS   build
+# 		# BUILD_ALWAYS OFF
+# 		CMAKE_CACHE_ARGS
+# 		-DQ_BUILD_IO:BOOL=OFF
+# 		-DQ_BUILD_TEST:BOOL=OFF
+# 		-DQ_BUILD_EXAMPLES:BOOL=OFF
+# 		)
+# include_directories(${EXTERNALS_DIR}/src/q/q_lib/include)
+# include_directories(${EXTERNALS_DIR}/src/q/infra/include)
+# add_library(libq INTERFACE)
+# add_dependencies(libq ${project_name})
+# target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/qlib/include)
+# target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/infra/include)
 
-add_library(libq INTERFACE)
-add_dependencies(libq ${project_name})
-target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/qlib/include)
-target_include_directories(libq INTERFACE ${EXTERNALS_DIR}/src/q/infra/include)
+
+set(Q_DIR lib/q)
+
+option(Q_BUILD_EXAMPLES "" OFF)
+option(Q_BUILD_TEST "" OFF)
+option(Q_BUILD_IO "" OFF)
+
+add_subdirectory(${Q_DIR})
+include_directories(${Q_DIR}/q_lib/include)
+include_directories(${Q_DIR}/infra/include)
+add_library(qlib INTERFACE)
+
+# add_dependencies(qlib ${project_name})
+#target_link_libraries(${project_name}
+#	PUBLIC
+#	libq)
+
+#target_include_directories(qlib INTERFACE ${Q_DIR}/q_lib/include)
+#target_include_directories(qlib INTERFACE ${Q_DIR}/infra/include)
+set_target_properties(qlib PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:qlib,INTERFACE_INCLUDE_DIRECTORIES>)
 
 # End target BitstreamAutocorrelation
 ####################################################################################################
