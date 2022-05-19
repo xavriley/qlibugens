@@ -66,9 +66,9 @@ endif()
 # Begin target BitstreamAutocorrelation
 
 set(BitstreamAutocorrelation_cpp_files
-    plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.cpp
-    plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.hpp
-)
+        plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.cpp
+        plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.hpp
+        )
 set(BitstreamAutocorrelation_sc_files
     plugins/BitstreamAutocorrelation/BitstreamAutocorrelation.sc
 )
@@ -83,6 +83,26 @@ sc_add_server_plugin(
     "${BitstreamAutocorrelation_cpp_files}"
     "${BitstreamAutocorrelation_sc_files}"
     "${BitstreamAutocorrelation_schelp_files}"
+)
+
+set(BitstreamPitchCorrection_cpp_files
+        plugins/BitstreamPitchCorrection/BitstreamPitchCorrection.cpp
+        plugins/BitstreamPitchCorrection/BitstreamPitchCorrection.hpp
+        )
+set(BitstreamPitchCorrection_sc_files
+        plugins/BitstreamPitchCorrection/BitstreamPitchCorrection.sc
+        )
+set(BitstreamPitchCorrection_schelp_files
+        plugins/BitstreamPitchCorrection/BitstreamPitchCorrection.schelp
+        )
+
+
+sc_add_server_plugin(
+        "QlibUGens/BitstreamPitchCorrection" # desination directory
+        "BitstreamPitchCorrection" # target name
+        "${BitstreamPitchCorrection_cpp_files}"
+        "${BitstreamPitchCorrection_sc_files}"
+        "${BitstreamPitchCorrection_schelp_files}"
 )
 
 # This external project method works but ran into race issues on Github CI

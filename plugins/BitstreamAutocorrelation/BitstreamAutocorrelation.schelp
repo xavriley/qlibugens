@@ -1,6 +1,6 @@
 class:: BitstreamAutocorrelation
 summary:: A time-domain monophonic pitch tracker
-related:: Tartini, Pitch, Qitch
+related:: Classes/Tartini, Classes/Pitch, Classes/Qitch
 categories:: UGens>Analysis>Pitch
 
 description::

@@ -1,0 +1,102 @@
+class:: BitstreamPitchCorrection
+summary:: A time-domain pitch correction, similar to autotune
+related:: Classes/Tartini, Classes/Pitch, Classes/Qitch
+categories:: UGens>Unclassified
+
+description::
+
+Time domain pitch correction and modulation, similar to the famous autotune by Antares.
+
+The original autotune effect (US Patent: US5973252) comprises two parts: a pitch tracker and a variable speed playback buffer.
+
+The pitch tracker in this case is identical to the link::Classes/BitstreamAutocorrelation:: UGen - see that class for details.
+
+The patent uses a different pitch tracker - in principle anything with relatively low latency will work to achieve the effect.
+The accuracy and latency of the tracker will have a bearing on the overall quality though.
+
+The variable speed playback buffer is common to many digital effects - input samples are written at a write pointer, output
+samples are taken from the index of the read pointer. Advancing the read pointer at different rates (along with fractional
+interpolation between buffer samples) changes the pitch of the output.
+
+If the read pointer is playing back at a faster rate i.e. a higher pitch, then eventually it will overtake the write pointer
+(aka an overrun) and cause junk output, pops, clicks etc. which is undesirable. The innovation of Antares is that, in
+the case of an overrun, the read pointer is moved back by one or more periods of the current frequency.
+
+Similarly, if the buffer is playing back at a slower rate (lower pitch) an underrun could occur. This effect checks for
+underruns and advances the read pointer by one or more periods of the current frequency.
+
+The mechanism is fairly simple and works surprisingly well in practice. It is all processed in the time domain with no FFTs
+required.
+
+classmethods::
+
+method::ar
+
+argument::input
+
+Input as audio rate signal.
+
+argument::low_f
+
+Lowest detectable frequency. Lower frequencies here can introduce longer latencies in detection, so aim to minimize
+this by constraining it to the range of your expected source where possible.
+
+argument::high_f
+
+Highest detectable frequency. Higher frequencies do not affect latency although they incur a small amount of additional
+computation time. On resource constrained systems this should be reduced where possible.
+
+argument::transpose
+
+Number of semitones to transpose the output up or down. Maximum ranges are -24 (down 2 octaves) or +24 (up 2 octaves).
+Fractional transpositions can be expressed using floats.
+
+argument::target_note
+
+MIDI note to transpose all output to. This overrides the other parameters transpose, key and scale. With this set, the
+output will be modulated to hit the given note. A value of -1 disables this param.
+
+argument::key
+
+Key to tune the output to. Works in conjunction with the scale param. 0 = C, 1 = C#/Db, 2 = D, ... 11 = B.
+
+argument::scale
+
+Scale to tune the output to. Works in conjunction with the key param. 0 = chromatic (ie. to the nearest semitone), 1 = major,
+2 = major_pentatonic, 3 = minor_pentatonic. Mapping input frequencies to to their nearest notes is currently an expensive
+operation and is likely to cause increased CPU usage.
+
+examples::
+
+code::
+
+(
+SynthDef(\tuner, {
+	|out, rate=1, transpose=0, target_note = -1, key = 0, scale = 0|
+
+	b = Buffer.readChannel(s, Platform.resourceDir+/+"sounds/a11wlk01.wav", channels: [0]);
+
+	Out.ar(out, BitstreamPitchCorrection.ar(PlayBuf.ar(1, b, rate, loop:1), 50, 1000, transpose, target_note, key, scale))
+}).send(s);
+)
+
+a = Synth(\tuner);
+
+// Try setting the following
+a.set(\scale, 2);
+a.set(\key, 1);
+a.set(\transpose, -5);
+
+// We can change the rate of the input while still altering the pitch
+a.set(\rate, 0.8);
+
+// To "lock" everything to middle C, try this
+// results may be better for input with a more clear pitch
+a.set(\target_note, 60);
+
+// To reset back to "locking" to scale
+a.set(\target_note, -1);
+
+a.free;
+
+::
